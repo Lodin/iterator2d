@@ -1,0 +1,17 @@
+[package]
+name = "iterator2d"
+version = "0.1.0"
+authors = ["Vlad Rindevich <rindevich.vs@gmail.com>"]
+license = "MIT"
+description = "An two-dimensional collection iterator"
+readme = "README.md"
+repository = "https://github.com/Lodin/iterator2d"
+keywords = ["iterator"]
+
+[lib]
+name = "iterator2d"
+crate_type = ["lib","rlib"]
+path = "src/lib.rs"
+
+[dev-dependencies]
+num = "*"
