@@ -2,8 +2,6 @@
 #![crate_type="lib"]
 #![crate_type="rlib"]
 
-use std::slice::{ Iter, IterMut };
-
 /// An interface for making possible the iteration in two-dimensional
 /// collections. Two-dimensional iterator mainly is the same as
 /// `std::iter::Iterator`, and have main additional method: `enumerate2d()`.
@@ -28,74 +26,6 @@ pub trait Iterator2d {
     fn cols(&self) -> usize;
 }
 
-macro_rules! iterator2d {
-    ( struct $name:ident, struct $iter:ident, $t: ty ) => {
-        impl<'a, T> $name<'a, T> {
-            pub fn new(iter: $iter<'a, T>, rows: usize, cols: usize) -> $name<T> {
-                $name {
-                    iter: iter,
-                    rows: rows,
-                    cols: cols
-                }
-            }
-        }
-
-        impl<'a, T> Iterator2d for $name<'a, T> {
-    
-            #[inline]
-            fn rows(&self) -> usize {
-                self.rows
-            }
-
-            #[inline]
-            fn cols(&self) -> usize {
-                self.cols
-            }
-        }
-
-        impl<'a, T> Iterator for $name<'a, T> {
-            type Item = $t;
-
-            #[inline]
-            fn next(&mut self) -> Option<Self::Item> {
-                self.iter.next()
-            }
-
-            #[inline]
-            fn size_hint(&self) -> (usize, Option<usize>) {
-                self.iter.size_hint()
-            }
-
-            #[inline]
-            fn nth(&mut self, n: usize) -> Option<Self::Item> {
-                self.iter.nth(n)
-            }
-
-            #[inline]
-            fn count(self) -> usize {
-                self.iter.count()
-            }
-        } 
-    }
-}
-
-/// Immutable two-dimensional collection iterator
-pub struct Iter2d<'a, T: 'a> {
-    iter: Iter<'a, T>,
-    rows: usize,
-    cols: usize
-}
-
-iterator2d!(struct Iter2d, struct Iter, &'a T);
-
-/// Mutable two-dimensional collection iterator
-pub struct Iter2dMut<'a, T: 'a> {
-    iter: IterMut<'a, T>,
-    rows: usize,
-    cols: usize
-}
-
-iterator2d!(struct Iter2dMut, struct IterMut, &'a mut T);
 
 /// An iterator for two-dimensional collection that yields current row, column
 /// and the element during iteration
@@ -130,14 +60,16 @@ impl<I> Iterator for Enumerate2d<I> where I: Iterator + Iterator2d {
     fn nth(&mut self, n: usize)
         -> Option<(usize, usize, <I as Iterator>::Item)> {
         self.iter.nth(n).map(|a| {
-            let j = n % self.iter.cols();
-            let i = (n - j) / self.iter.cols();
+            let cur = self.row * self.iter.cols() + self.col + n;
+            let j = cur % self.iter.cols();
+            let i = (cur - j) / self.iter.cols();
             self.col = j + 1;
             self.row = i;
-
+            
             if self.col == self.iter.cols() {
-                self.row += 1;    
-            }    
+                self.row += 1;
+                self.col = 0;
+            }
 
             (i, j, a)
         }) 
