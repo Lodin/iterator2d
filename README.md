@@ -6,4 +6,4 @@ A two-dimensional collection iterator for Rust. It add iteration ability for
 collection like matrices, where all data is stored in simple array but the
 two-dimensional access is need. 
 
-An examples can be seen in [tests](./tests) section.
+Examples can be seen in [tests](./tests) section.
