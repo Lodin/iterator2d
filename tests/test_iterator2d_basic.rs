@@ -3,7 +3,7 @@ extern crate num;
 
 use iterator2d::Iterator2d;
 use num::cast;
-use std::slice::{ Iter, IterMut };
+use std::slice::{ Iter as SliceIter, IterMut as SliceIterMut };
 
 pub struct Collection2d {
     data: [i32; 9]
@@ -20,16 +20,16 @@ impl Collection2d {
         } 
     }
 
-    pub fn iter(&self) -> IterCollection2d<i32> {
-        IterCollection2d {
+    pub fn iter(&self) -> Iter<i32> {
+        Iter {
             iter: self.data.iter(),
             rows: 3,
             cols: 3
         }
     }
 
-    pub fn iter_mut(&mut self) -> IterCollection2dMut<i32> {
-        IterCollection2dMut {
+    pub fn iter_mut(&mut self) -> IterMut<i32> {
+        IterMut {
             iter: self.data.iter_mut(),
             rows: 3,
             cols: 3
@@ -40,6 +40,8 @@ impl Collection2d {
 macro_rules! iterator2d {
     ( struct $name:ident, struct $iter:ident, $t: ty ) => {
         impl<'a, T> $name<'a, T> {
+
+            #[inline]
             pub fn new(iter: $iter<'a, T>, rows: usize, cols: usize) -> $name<T> {
                 $name {
                     iter: iter,
@@ -89,22 +91,22 @@ macro_rules! iterator2d {
 }
 
 /// Immutable two-dimensional collection iterator
-pub struct IterCollection2d<'a, T: 'a> {
-    iter: Iter<'a, T>,
+pub struct Iter<'a, T: 'a> {
+    iter: SliceIter<'a, T>,
     rows: usize,
     cols: usize
 }
 
-iterator2d!(struct IterCollection2d, struct Iter, &'a T);
+iterator2d!(struct Iter, struct SliceIter, &'a T);
 
 /// Mutable two-dimensional collection iterator
-pub struct IterCollection2dMut<'a, T: 'a> {
-    iter: IterMut<'a, T>,
+pub struct IterMut<'a, T: 'a> {
+    iter: SliceIterMut<'a, T>,
     rows: usize,
     cols: usize
 }
 
-iterator2d!(struct IterCollection2dMut, struct IterMut, &'a mut T);
+iterator2d!(struct IterMut, struct SliceIterMut, &'a mut T);
 
 
 #[test]
